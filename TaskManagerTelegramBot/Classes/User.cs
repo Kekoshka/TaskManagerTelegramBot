@@ -8,12 +8,12 @@ namespace TaskManagerTelegramBot.Classes
 {
     public class User
     {
-        public Guid Id { get; set; }
+        public long Id { get; set; }
         public ICollection<Event> Events { get; set; }
-        public User(Guid userId) 
+        public User(long userId) 
         {
             Id = userId;
-            Events = new ICollection<Event>;
+            Events = new List<Event>();
         }
     }
 }

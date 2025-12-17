@@ -1,5 +1,6 @@
 using TaskManagerTelegramBot.Classes;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TaskManagerTelegramBot
@@ -61,6 +62,40 @@ namespace TaskManagerTelegramBot
             inlineKeyboardButtons.Add(new InlineKeyboardButton("Удалить"));
             return new InlineKeyboardMarkup(inlineKeyboardButtons);
         }
-
+        public async void SendMessage(long chatId, int typeMessage)
+        {
+            if(typeMessage != 3)
+            {
+                await _client.SendMessage(chatId,
+                    _messeges[typeMessage], 
+                    ParseMode.Html,
+                    replyMarkup: GetButtons());
+            }
+            else if(typeMessage == 3)
+            {
+                await _client.SendMessage(chatId,"Указанное время и дата не могут быть установлены," +
+                    $"потому-что сейчас уже {DateTime.Now.ToString("HH.mm dd.MM.yyyy")}");
+            }
+        }
+        public async void Command(long chatId, string command)
+        {
+            var lowerCommand = command.ToLower();
+            if (lowerCommand == "/start") SendMessage(chatId, 0);
+            else if (lowerCommand == "/create_task") SendMessage(chatId, 1);
+            else if (lowerCommand == "/list_tasks")
+            {
+                User user = _users.Find(u => u.Id == chatId);
+                if(user is null) SendMessage(chatId, 4);
+                else if(user.Events.Count == 0) SendMessage(chatId, 4);
+                else
+                {
+                    foreach (Event ev in user.Events)
+                        await _client.SendMessage(chatId,
+                            $"Уведомить пользователя: {ev.Time.ToString("HH.mm dd.MM.yyyy")}" +
+                            $"\nСообщение: {ev.Message}",
+                            replyMarkup: DeleteEvent(ev.Message));
+                }
+            }
+        }
     }
 }
