@@ -1,5 +1,6 @@
 using TaskManagerTelegramBot.Classes;
 using Telegram.Bot;
+using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -140,5 +141,27 @@ namespace TaskManagerTelegramBot
                 user.Events.Add(new Event(time, message.Text.Replace(time.ToString("HH.mm dd.MM.yyyy") + "\n", "")));
             }
         }
+        private async Task HandleUpdateAsync(ITelegramBotClient client,
+            Update update,
+            CancellationToken cancellationToken)
+        {
+            if (update.Type == UpdateType.Message) GetMessages(update.Message);
+
+            else if(update.Type == UpdateType.CallbackQuery)
+            {
+                CallbackQuery query = update.CallbackQuery;
+                var user = _users.Find(u => u.Id == query.Message.Chat.Id);
+                var ev = user.Events.Find(u => u.Message == query.Data);
+                user.Events.Remove(ev);
+                SendMessage(query.Message.Chat.Id, 5);
+            }
+        }
+
+        private async Task HandleErrorAsync(
+            ITelegramBotClient client,
+            Exception ex,
+            HandleErrorSource source,
+            CancellationToken cancellationToken) =>
+            Console.WriteLine("Ошибка" + ex.Message);
     }
 }

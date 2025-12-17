@@ -9,7 +9,7 @@ namespace TaskManagerTelegramBot.Classes
     public class User
     {
         public long Id { get; set; }
-        public ICollection<Event> Events { get; set; }
+        public List<Event> Events { get; set; }
         public User(long userId) 
         {
             Id = userId;
