@@ -10,9 +10,9 @@ namespace TaskManagerTelegramBot
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly string _token = "";
+        private readonly string _token = "7844986009:AAERICRYFE-lBAW9m9_TUHbm4no31cEXQAc";
         TelegramBotClient _client;
-        List<Classes.User> _users;
+        List<Classes.User> _users = new();
         Timer _timer;
         List<string> _messeges = new()
         {
@@ -36,14 +36,6 @@ namespace TaskManagerTelegramBot
             "Все события удалены."
         };
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
-        {
-            _client = new TelegramBotClient(_token);
-            _client.StartReceiving(HandleUpdateAsync, HandleErrorAsync, null, new CancellationTokenSource().Token);
-            TimerCallback timerCallback = new TimerCallback(Tick);
-            _timer = new Timer(timerCallback, 0, 0, 60 * 1000);
-        }
-
         public Worker(ILogger<Worker> logger)
         {
             _logger = logger;
@@ -51,14 +43,10 @@ namespace TaskManagerTelegramBot
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                if (_logger.IsEnabled(LogLevel.Information))
-                {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                }
-                await Task.Delay(1000, stoppingToken);
-            }
+            _client = new TelegramBotClient(_token);
+            _client.StartReceiving(HandleUpdateAsync, HandleErrorAsync, null, new CancellationTokenSource().Token);
+            TimerCallback timerCallback = new TimerCallback(Tick);
+            _timer = new Timer(timerCallback, 0, 0, 60 * 1000);
         }
         public bool CheckFormatDateTime(string value, out DateTime time) => DateTime.TryParse(value, out time);
         private static ReplyKeyboardMarkup GetButtons()
