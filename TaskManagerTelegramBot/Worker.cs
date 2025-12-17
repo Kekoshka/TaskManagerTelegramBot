@@ -10,7 +10,7 @@ namespace TaskManagerTelegramBot
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly string Token = "";
+        private readonly string _token = "";
         TelegramBotClient _client;
         List<Classes.User> _users;
         Timer _timer;
@@ -35,6 +35,15 @@ namespace TaskManagerTelegramBot
 
             "Все события удалены."
         };
+
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            _client = new TelegramBotClient(_token);
+            _client.StartReceiving(HandleUpdateAsync, HandleErrorAsync, null, new CancellationTokenSource().Token);
+            TimerCallback timerCallback = new TimerCallback(Tick);
+            _timer = new Timer(timerCallback, 0, 0, 60 * 1000);
+        }
+
         public Worker(ILogger<Worker> logger)
         {
             _logger = logger;
@@ -163,5 +172,18 @@ namespace TaskManagerTelegramBot
             HandleErrorSource source,
             CancellationToken cancellationToken) =>
             Console.WriteLine("Ошибка" + ex.Message);
+
+        public async void Tick(Object obj)
+        {
+            string TimeNow = DateTime.Now.ToString("HH:mm dd.MM.yyyy");
+            foreach(var user in _users)
+                for(int i = 0;i < user.Events.Count; i++)
+                {
+                    if (user.Events[i].Time.ToString("HH:mm dd.MM.yyyy") != TimeNow) continue;
+                    await _client.SendMessage(user.Id,
+                        "Напоминание: " + user.Events[i].Message);
+                    user.Events.Remove(user.Events[i]);
+                }
+        }
     }
 }
