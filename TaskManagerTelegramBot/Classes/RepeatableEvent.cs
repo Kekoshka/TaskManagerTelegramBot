@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace TaskManagerTelegramBot.Classes
 {
-    public class Event
+    public class RepeatableEvent
     {
         public Guid Id { get; set; }
-        public DateTime Time { get; set; }
+        public TimeOnly Time { get; set; }
         public string Message { get; set; }
+
     }
 }
